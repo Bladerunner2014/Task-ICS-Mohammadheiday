@@ -9,9 +9,12 @@ config = dotenv_values(".env")
 logger = logging.getLogger(__name__)
 
 
-@app.get('/customers/accounts', summary='gathering customer accounts and transactions')
-async def get_customers_accounts():
+@app.post('/customers/accounts', summary='gathering customer accounts and transactions')
+async def get_customers_accounts(customer_id):
     pass
+
+
+
 
 
 log.setup_logger()
