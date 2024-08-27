@@ -15,7 +15,7 @@ async def get_customers_accounts(customer_id):
 
 
 @app.post('/customers/requests', summary='get list of customer requests')
-async def get_customers_accounts(customer_id):
+async def get_requests_list(customer_id):
     pass
 
 
