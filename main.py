@@ -19,6 +19,14 @@ async def get_requests_list(customer_id):
     pass
 
 
+@app.post('/requests/status', summary='get status of customer request')
+async def get_requests_list(request_id):
+    pass
+
+
+@app.post('/requests/detail', summary='get details of customer request')
+async def get_requests_list(request_id):
+    pass
 
 
 log.setup_logger()
