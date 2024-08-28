@@ -20,10 +20,14 @@ async def get_customer(customer_id: CustomerID) -> ORJSONResponse:
 
 
 @app.post('/customers/accounts', summary='gathering customer accounts and transactions')
-async def get_customers_accounts(customer_id: CustomerID) -> ORJSONResponse:
+async def get_customers_accounts(customer_id: CustomerID):
     handler = Accounts()
     result = handler.get_customer_accounts(customer_id=customer_id)
-    return result
+    res = handler.create_requests(customer_id=customer_id, banks=result)
+
+    r = handler.send_request_to_bank(res)
+
+    return r, 200
 
 
 @app.post('/customers/requests', summary='get list of customer requests')

@@ -46,3 +46,4 @@ class RequestData(BaseModel):
     customer_id: str
     bank_name: str
     timeout: int
+    error_log_dict: dict

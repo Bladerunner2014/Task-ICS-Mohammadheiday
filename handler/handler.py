@@ -18,68 +18,82 @@ class Accounts:
         self.request_handler = RequestHandler()
 
     def check_customer_existence(self, customer_id: CustomerID) -> ORJSONResponse:
-        results = self.request_handler.send_get_request(base_url=config["MOCK_BASE"],
-                                                        end_point=config["MOCK_ENDPOINT_ACCOUNTS"],
-                                                        port=config["MOCK_PORT"],
-                                                        timeout=config["TIMEOUT"],
-                                                        error_log_dict={
-                                                            "REQUEST_ERROR": ErrorMessage.MOCKSERVICE})
-        if results.status_code != status.HTTP_200_OK:
+        content, status_code = self.request_handler.send_get_request(base_url=config["MOCK_BASE"],
+                                                                     end_point=config["MOCK_ENDPOINT_ACCOUNTS"],
+                                                                     port=config["MOCK_PORT"],
+                                                                     timeout=config["TIMEOUT"])
+
+        if status_code != status.HTTP_200_OK:
             return ORJSONResponse(content={"message": ErrorMessage.EXTERNAL_SERVICE},
                                   status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-        content = results.json()
-        logger.info(content["data"])
-
         if str(customer_id.customer_id) in content["data"]:
             return ORJSONResponse(content={"message": customer_id.customer_id},
                                   status_code=status.HTTP_200_OK)
-
         else:
             return ORJSONResponse(content={"message": ErrorMessage.NOT_FOUND},
                                   status_code=status.HTTP_400_BAD_REQUEST)
 
-    def get_customer_accounts(self, customer_id: CustomerID) -> ORJSONResponse:
-        results = self.request_handler.send_get_request(base_url=config["MOCK_BASE"],
-                                                        end_point=config[
-                                                                      "MOCK_ENDPOINT_ACCOUNTS"] + "{customer_id}".format(
-                                                            customer_id=customer_id.customer_id),
-                                                        port=config["MOCK_PORT"],
-                                                        timeout=config["TIMEOUT"],
-                                                        error_log_dict={
-                                                            "message": ErrorMessage.MOCKSERVICE})
-        if results.status_code != status.HTTP_200_OK:
+    def get_customer_accounts(self, customer_id: CustomerID):
+        results, statu_code = self.request_handler.send_get_request(base_url=config["MOCK_BASE"],
+                                                                    end_point=config[
+                                                                                  "MOCK_ENDPOINT_ACCOUNTS"] + "{customer_id}".format(
+                                                                        customer_id=customer_id.customer_id),
+                                                                    port=config["MOCK_PORT"],
+                                                                    timeout=config["TIMEOUT"],
+                                                                    )
+        if statu_code != status.HTTP_200_OK:
             return ORJSONResponse(content={"message": ErrorMessage.EXTERNAL_SERVICE},
                                   status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        content = results.json()
+        return results["data"]["banks"]
 
-        return ORJSONResponse(content=content,
-                              status_code=status.HTTP_200_OK)
+    def create_requests(self, customer_id: CustomerID, banks: list) -> list:
+        requests_data = [
+            {
+                'base_url': config["MOCK_BASE"],
+                'end_point': config["MOCK_ENDPOINT_ACCOUNTS"] + "4828128514"
+                             + "/" + "melli" + "/transactions",
+                'timeout': '15',
+                'port': config["MOCK_PORT"],
+            },
+            {
+                'base_url': config["MOCK_BASE"],
+                'end_point': config["MOCK_ENDPOINT_ACCOUNTS"] + "4828128514"
+                             + "/" + "mellat" + "/transactions",
+                'timeout': '15',
+                'port': config["MOCK_PORT"],
 
-    def create_requests(self, customer_id: CustomerID, banks: list):
-        request_list = []
-        for i in banks:
-            r = RequestData
-            r.bank_name = i
-            r.customer_id = customer_id
-            r.error_message = "something wrong"
-            r.base_url = config["MOCK_BASE"]
-            r.end_point = config["MOCK_ENDPOINT_ACCOUNTS"] + "/" + "{customer_id}".format(
-                customer_id=customer_id) + "/" + "{bank}".format(bank=i)
-            r.e
-            request_list.append(RequestData())
+            },
+            {
+                'base_url': config["MOCK_BASE"],
+                'end_point': config["MOCK_ENDPOINT_ACCOUNTS"] + "4828128514"
+                             + "/" + "saderat" + "/transactions",
+                'timeout': '15',
+                'port': config["MOCK_PORT"],
+            },
+            {
+                'base_url': config["MOCK_BASE"],
+                'end_point': config["MOCK_ENDPOINT_ACCOUNTS"] + "4828128514"
+                             + "/" + "tejarat" + "/transactions",
+                'timeout': '15',
+                'port': config["MOCK_PORT"],
 
-    def get_transactions(self, customer_id: CustomerID):
-        check_existence = self.check_customer_existence(customer_id=customer_id)
-        if check_existence.status_code != status.HTTP_200_OK:
-            return check_existence
+            }
+            # Add more requests as needed
+        ]
+        return requests_data
 
-    def send_request_to_bank(self, customer_id: CustomerID, banks: list) -> ORJSONResponse:
-        batch_request = ResponseFetcher(self.request_handler)
-        response_from_banks = batch_request.fetch_responses()
+    # def get_transactions(self, customer_id: CustomerID):
+    #     check_existence = self.check_customer_existence(customer_id=customer_id)
+    #     if check_existence.status_code != status.HTTP_200_OK:
+    #         return check_existence
 
-        pass
+    def send_request_to_bank(self, requests: list):
+        response_fetcher = ResponseFetcher(self.request_handler)
+        response_from_banks = response_fetcher.fetch_responses(requests_data=requests)
+        all_successful = response_fetcher.are_all_responses_successful(response_from_banks)
+        logger.info("@@@@@@@@@@@{}".format(all_successful))
+        return response_from_banks
 
     def store_transactions(self, reminder_id: str, bank: str) -> ORJSONResponse:
         pass

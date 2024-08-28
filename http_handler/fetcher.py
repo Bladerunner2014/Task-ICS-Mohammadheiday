@@ -22,8 +22,8 @@ class ResponseFetcher:
             for future in as_completed(future_to_request):
                 request_data = future_to_request[future]
                 try:
-                    response = future.result()
-                    responses.append(self._process_response(request_data, response))
+                    response, status_code = future.result()
+                    responses.append(self._process_response(request_data, response, status_code))
                 except Exception as exc:
                     responses.append(self._handle_error(request_data, exc))
         return responses
@@ -31,11 +31,11 @@ class ResponseFetcher:
     def _fetch_response(self, request_data):
         return self.request_handler.send_get_request(**request_data)
 
-    def _process_response(self, request_data, response):
+    def _process_response(self, request_data, response, status_code):
         return {
             'url': request_data['base_url'] + ":" + request_data['port'] + request_data['end_point'],
-            'status_code': response.status_code,
-            'response': response.json() if response.status_code == status.HTTP_200_OK else response.text
+            'status_code': status_code,
+            'response': response
         }
 
     def _handle_error(self, request_data, exc):
