@@ -6,6 +6,7 @@ from schemas.schema import CustomerID
 from log import log
 from http_handler.request_handler import RequestHandler
 from constants.error_message import ErrorMessage
+from http_handler.fetcher import ResponseFetcher
 
 config = dotenv_values(".env")
 
@@ -53,7 +54,10 @@ class Accounts:
         return ORJSONResponse(content=content,
                               status_code=status.HTTP_200_OK)
 
-    def send_request_to_bank(self, customer_id: CustomerID, bank: str) -> ORJSONResponse:
+    def send_request_to_bank(self, customer_id: CustomerID, banks: list) -> ORJSONResponse:
+        batch_request = ResponseFetcher(self.request_handler)
+        response_from_banks = batch_request.fetch_responses()
+
         pass
 
     def store_transactions(self, reminder_id: str, bank: str) -> ORJSONResponse:
