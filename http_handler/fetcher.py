@@ -1,6 +1,6 @@
 import logging
 from fastapi import status
-from request_handler import RequestHandler
+from http_handler.request_handler import RequestHandler
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from log import log
 
@@ -12,7 +12,7 @@ class ResponseFetcher:
         self.request_handler = request_handler
         self.logger = logger
 
-    def fetch_responses(self, requests_data):
+    def fetch_responses(self, requests_data: list):
         responses = []
         with ThreadPoolExecutor(max_workers=len(requests_data)) as executor:
             future_to_request = {

@@ -15,8 +15,8 @@ class RequestHandler:
 
     @retry(
         retry=retry_if_exception_type((requests.exceptions.Timeout, requests.exceptions.ConnectionError)),
-        stop=stop_after_attempt(int(config[""])),
-        wait=wait_fixed(int(config[""]))
+        stop=stop_after_attempt(int(config["RETRY"])),
+        wait=wait_fixed(int(config["WAIT"]))
     )
     def send_post_request(self, base_url: str, end_point: str, port: str, body: dict, timeout: str,
                           error_log_dict: dict, headers: dict = None) -> (dict, int):
@@ -57,8 +57,8 @@ class RequestHandler:
 
     @retry(
         retry=retry_if_exception_type((requests.exceptions.Timeout, requests.exceptions.ConnectionError)),
-        stop=stop_after_attempt(int(config[""])),  # Retry up to 3 times
-        wait=wait_fixed(int(config[""]))  # Wait 2 seconds between retries
+        stop=stop_after_attempt(int(config["RETRY"])),
+        wait=wait_fixed(int(config["WAIT"]))
     )
     def send_put_request(self, base_url: str, end_point: str, port: str, body: dict, timeout: str,
                          error_log_dict: dict) -> (dict, int):
@@ -96,8 +96,8 @@ class RequestHandler:
 
     @retry(
         retry=retry_if_exception_type((requests.exceptions.Timeout, requests.exceptions.ConnectionError)),
-        stop=stop_after_attempt(int(config[""])),
-        wait=wait_fixed(int(config[""]))
+        stop=stop_after_attempt(int(config["RETRY"])),
+        wait=wait_fixed(int(config["WAIT"]))
     )
     def send_get_request(self, base_url: str, port: str, end_point: str, timeout: str, error_log_dict: dict,
                          params: dict = None, headers: dict = None):

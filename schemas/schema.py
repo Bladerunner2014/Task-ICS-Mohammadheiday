@@ -10,7 +10,7 @@ unique_id = IDGenerator()
 
 
 class CustomerID(BaseModel):
-    customer_id: int = Field(..., max_length=10)
+    customer_id: int
 
 
 class Banks(BaseModel):
@@ -24,7 +24,7 @@ class Transaction(BaseModel):
     date: datetime
     type: str
     amount: int
-    bank: Bank
+    bank: str
 
 
 class Status(str, Enum):
@@ -38,3 +38,11 @@ class RequestAccountsInDB(BaseModel):
     customer_id: str
     created_at: str | None = Field(default_factory=lambda: datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S.%f"))
     status: str | None = Field(default_factory=lambda: Status.PENDING)
+
+
+class RequestData(BaseModel):
+    base_url: str
+    end_point: str
+    customer_id: str
+    bank_name: str
+    timeout: int
