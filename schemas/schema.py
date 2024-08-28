@@ -3,7 +3,8 @@ from utils.id_generator import IDGenerator
 from datetime import datetime
 from datetime import timezone
 from enum import Enum
-from pydantic import constr
+from typing import List
+from uuid import UUID
 
 unique_id = IDGenerator()
 
@@ -11,16 +12,19 @@ unique_id = IDGenerator()
 class CustomerID(BaseModel):
     customer_id: int = Field(..., max_length=10)
 
-class Bank(BaseModel):
-    customer_id: str = Field(..., max_length=30)
+
+class Banks(BaseModel):
+    customer_id: CustomerID
+    phone_number: str = Field(..., max_length=15)
+    code: UUID
+    banks: List[str]
+
 
 class Transaction(BaseModel):
     date: datetime
     type: str
     amount: int
     bank: Bank
-
-
 
 
 class Status(str, Enum):
