@@ -1,7 +1,11 @@
 import json
 import logging
 import requests
-from fastapi import HTTPException, status
+from fastapi import status
+from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_type
+from dotenv import dotenv_values
+
+config = dotenv_values(".env")
 
 
 class RequestHandler:
@@ -9,6 +13,11 @@ class RequestHandler:
     def __init__(self):
         self.logger = logging.getLogger(__name__)
 
+    @retry(
+        retry=retry_if_exception_type((requests.exceptions.Timeout, requests.exceptions.ConnectionError)),
+        stop=stop_after_attempt(int(config[""])),
+        wait=wait_fixed(int(config[""]))
+    )
     def send_post_request(self, base_url: str, end_point: str, port: str, body: dict, timeout: str,
                           error_log_dict: dict, headers: dict = None) -> (dict, int):
         """
@@ -46,10 +55,15 @@ class RequestHandler:
         else:
             return r.text, r.status_code
 
+    @retry(
+        retry=retry_if_exception_type((requests.exceptions.Timeout, requests.exceptions.ConnectionError)),
+        stop=stop_after_attempt(int(config[""])),  # Retry up to 3 times
+        wait=wait_fixed(int(config[""]))  # Wait 2 seconds between retries
+    )
     def send_put_request(self, base_url: str, end_point: str, port: str, body: dict, timeout: str,
                          error_log_dict: dict) -> (dict, int):
         """
-        post_request send post request .
+        send_put_request sends put request .
 
         :param base_url: destination base_url
         :param end_point: destination end_point
@@ -61,7 +75,7 @@ class RequestHandler:
         """
         default_headers = {"Content-Type": "application/json"}
         try:
-            r = requests.put(url=base_url + ":" + port + end_point, data=body, headers=default_headers,
+            r = requests.put(url=base_url + ":" + port + end_point, data=json.dumps(body), headers=default_headers,
                              timeout=int(timeout))
         except requests.exceptions.Timeout as error:
             self.logger.error(error_log_dict["REQUEST_TIMEOUT"])
@@ -80,10 +94,15 @@ class RequestHandler:
         else:
             return r.text, r.status_code
 
+    @retry(
+        retry=retry_if_exception_type((requests.exceptions.Timeout, requests.exceptions.ConnectionError)),
+        stop=stop_after_attempt(int(config[""])),
+        wait=wait_fixed(int(config[""]))
+    )
     def send_get_request(self, base_url: str, port: str, end_point: str, timeout: str, error_log_dict: dict,
                          params: dict = None, headers: dict = None):
         """
-        post_request send post request .
+        send_get_request sends get request .
 
         :param headers:
         :param base_url: destination host

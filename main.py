@@ -4,6 +4,7 @@ import logging
 from log import log
 from schemas.schema import CustomerID
 from fastapi.responses import ORJSONResponse
+from handler.handler import Accounts
 
 
 app = FastAPI()
@@ -14,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 @app.post('/customers/accounts', summary='gathering customer accounts and transactions')
 async def get_customers_accounts(customer_id:CustomerID)->ORJSONResponse:
-    handler = AccountsHandler()
+    handler = Accounts()
     result = handler.accounts(customer_id= customer_id)
     return result
 
