@@ -9,23 +9,42 @@
 ![Redis](https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white)
 
 ## How does it works?
+کاربر یک درخواست در /request ثبت میکنه این در خواست میره تو صف پردازش توی rabbitmq . موقع پردازش ۱۰ تا thread باز میشه و برای هر بانک ریکوءست میفرسته. در صورتی که هر کدوم از ریکوءست ها فیل بشن تا ۲ بار retry صورت میگیره. اگه تمام ریکوءست ها با موفقیت انجام بشن وضعیت ریکوءست به done تغییر میکنه.
+آدرس /request/list وضعیت تمام ریکوءست هایی که کاربر فرستاده رو نمایش میده.
+برای راحتی کار من authentication رو برداشتم ولی با اضافه کردن CurrentUser به تابع هر API باید اطلاعات کاربر همراه ریکوءست فرستاده بشه.
+آدرس /amount باقی مانده حساب به همراه تراکنش ها رو نمایش میده. تو این API از Caching with Redis استفاده شده.
+پروژه داکرایز شده ولی یه ایراد داشت اونم این بود که داده ها تو دیتابیس ذخیره نمیشدن. البته اگر حوصله داشتید یه docker compose up بزنید شاید رو سیستم شما جواب داد!
+البته قبلش .env رو تغییر بدید.
 ## Run bare metal:
 Run the following command in the project root:
 ```bash
 docker run --name test -e POSTGRES_PASSWORD=123456789 -d -p 5432:5432 postgres
-
+```
+```bash
 docker run -d --name my-rabbit -p 5672:5672 -p 15672:15672 rabbitmq:management
-
+```
+```bash
 alembic revision --autogenerate -m "authentication3"
-
+```
+```bash
 alembic upgrade head
-
-celery -A queue_handler.celery_app flower
+```
+```bash
 celery -A queue_handler.celery_app worker --loglevel=info
 
-uvicorn --reload main:app --port 8001
 ```
-edit .env
+```bash
+celery -A queue_handler.celery_app flower
+
+```
+
+```bash
+uvicorn --reload main:app --port 8001
+
+```
+
+
+edit .env to MockService config
 ```bash
 #MOCKSERVICE
 MOCK_BASE= "http://0.0.0.0"
@@ -35,7 +54,7 @@ MOCK_PORT = 8000
 
 ```
 **Note:**
-
+I could not dockerize whole project!
 # License
 [![Licence](https://img.shields.io/github/license/Ileriayo/markdown-badges?style=for-the-badge)](./LICENSE)
 
