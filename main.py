@@ -5,8 +5,10 @@ from log import log
 from schemas.schema import CustomerID, RequestAccounts
 from fastapi.responses import ORJSONResponse
 from handler.handler import Accounts, CustomerTransaction
-from db.session import SessionDep
+from queue_handler.tasks import get_transactions_task
 from constants.info_message import InfoMessage
+from fastapi import status
+
 
 app = FastAPI()
 
@@ -22,28 +24,30 @@ async def get_customer(customer_id: CustomerID) -> ORJSONResponse:
 
 
 @app.post('/customers/transaction/list', summary='retrive all customer transactions')
-async def get_all_transactions(session: SessionDep,customer_id: CustomerID) -> ORJSONResponse:
-    handler = CustomerTransaction(session)
+async def get_all_transactions(customer_id: CustomerID) -> ORJSONResponse:
+    handler = CustomerTransaction()
     result = handler.all_transactions(customer_id)
     return result
+
+
 @app.post('/customers/transaction/request', summary='retrive all transactions related to a request id')
-async def get_all_transactions(session: SessionDep,request_id:str) -> ORJSONResponse:
-    handler = CustomerTransaction(session)
+async def get_all_transactions(request_id: str) -> ORJSONResponse:
+    handler = CustomerTransaction()
     result = handler.all_transactions_request(request_id)
     return result
 
+
 @app.post('/customers/transaction', summary='get transactions')
-async def get_customers_accounts(session: SessionDep, customer_request: RequestAccounts,
+async def get_customers_accounts(customer_request: RequestAccounts,
                                  background_tasks: BackgroundTasks):
     logger.info(InfoMessage.TRANSACTION_REQUEST)
-    handler = Accounts()
-    background_tasks.add_task(handler.get_transactions, session=session, customer_request=customer_request)
-    return "result", 200
+    get_transactions_task.delay(customer_request.dict())
+    return ORJSONResponse(content={"request_id":customer_request.request_id},status_code=status.HTTP_200_OK)
 
 
 @app.post('/customers/requests', summary='get list of customer requests')
-async def get_all_transactions(session: SessionDep, customer_id: CustomerID) -> ORJSONResponse:
-    handler = CustomerTransaction(session)
+async def get_all_transactions(customer_id: CustomerID) -> ORJSONResponse:
+    handler = CustomerTransaction()
     result = handler.all_requests(customer_id)
     return result
 

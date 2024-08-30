@@ -5,14 +5,19 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 from models.models import RequestAccountsInDB, TransactionInDB
 from schemas.schema import RequestAccounts, Status
+from db.engine import SessionLocal
+
+
 from datetime import datetime
 from typing import List, Dict
-
+from db.session import SessionDep
 logger = logging.getLogger(__name__)
 
 
 class Transaction:
-    def __init__(self, session: Session) -> None:
+    def __init__(self) -> None:
+        session = SessionLocal()
+
         self.db = session
 
     def find_request_by_id(self, request_id: Any) -> Optional[RequestAccountsInDB]:

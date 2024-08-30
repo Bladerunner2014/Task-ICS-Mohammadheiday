@@ -16,8 +16,8 @@ logger = logging.getLogger(__name__)
 
 
 class CustomerTransaction:
-    def __init__(self, session):
-        self.transaction_dao = Transaction(session)
+    def __init__(self):
+        self.transaction_dao = Transaction()
 
     def all_transactions(self, customer_id: CustomerID):
         res = self.transaction_dao.get_all_transactions(customer_id=customer_id.customer_id)
@@ -90,17 +90,17 @@ class Accounts:
             requests_data.append(req)
         return requests_data
 
-    def get_transactions(self, session, customer_request: RequestAccounts):
+    def get_transactions(self, customer_request: RequestAccounts):
         check_existence = self.check_customer_existence(customer_id=customer_request.customer_id)
         if check_existence.status_code != status.HTTP_200_OK:
             return check_existence
-        self.store_request(session=session, customer_request=customer_request)
+        self.store_request( customer_request=customer_request)
         bank_accounts = self.get_bank_accounts(customer_id=customer_request.customer_id)
         reqs = self.create_requests(customer_id=customer_request.customer_id, banks=bank_accounts)
         transactions, stat = self.send_request_to_bank(reqs, request_id=customer_request.request_id,
                                                        customer_id=int(customer_request.customer_id.customer_id))
-        self.store_transactions(transactions=transactions, session=session)
-        self.update_request_status(session=session, request_id=customer_request.request_id, stat=stat)
+        self.store_transactions(transactions=transactions)
+        self.update_request_status( request_id=customer_request.request_id, stat=stat)
         pass
 
     def send_request_to_bank(self, requests: list, request_id: str, customer_id):
@@ -110,23 +110,23 @@ class Accounts:
         all_successful = response_fetcher.are_all_responses_successful(response_from_banks)
         return response_from_banks, all_successful
 
-    def store_request(self, session, customer_request: RequestAccounts):
-        transaction_dao = Transaction(session)
+    def store_request(self, customer_request: RequestAccounts):
+        transaction_dao = Transaction()
         logger.info(InfoMessage.STORE_TO_DB)
         transaction_dao.create(request=customer_request)
 
         pass
 
-    def store_transactions(self, session, transactions):
-        transaction_dao = Transaction(session)
+    def store_transactions(self,  transactions):
+        transaction_dao = Transaction()
         logger.info(InfoMessage.STORE_TO_DB)
         transaction_dao.store_transactions(transactions)
         # logger.info(transactions)
 
         pass
 
-    def update_request_status(self, session, request_id: str, stat):
-        transaction_dao = Transaction(session)
+    def update_request_status(self, request_id: str, stat):
+        transaction_dao = Transaction()
         if stat:
             transaction_dao.update_request(request_id=request_id, status=Status.DONE)
         else:
