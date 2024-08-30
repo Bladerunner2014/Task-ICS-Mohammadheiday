@@ -1,0 +1,53 @@
+version: '3'
+
+services:
+  task:
+    build: .
+#    command: sh -c "celery -A queue_handler.celery_app worker --loglevel=info"
+    ports:
+      - "8009:8009"
+    depends_on:
+      - rabbitmq
+
+  #  redis:
+#      image: redis:latest
+#      ports:
+#        - "6379:6379"
+#      environment:
+#        - REDIS_PORT=6379
+#        - REDIS_PASSWORD= 'kTfmjCzLLSgFnyw2OoGw'
+#
+  celery_worker:
+      build:
+        context: .
+        dockerfile: Dockerfile.celery
+      container_name: celery_worker
+      depends_on:
+        - rabbitmq
+
+  rabbitmq:
+    image: "rabbitmq:management"
+    container_name: rabbitmq
+    ports:
+      - "5432:5332"
+      - "15672:15672"
+  postgres:
+    image: postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=123456789
+      - POSTGRES_DB=postgres
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+#  flower:
+#    image: mher/flower
+#    container_name: flower
+#    ports:
+#      - "5555:5555"
+#    depends_on:
+#      - rabbitmq
+
+volumes:
+  postgres-data:
