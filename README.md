@@ -61,7 +61,8 @@ MOCK_BASE= "http://0.0.0.0"
 MOCK_ENDPOINT_ACCOUNTS="/customers/"
 MOCK_PORT = 8000
 ```
-change all container hosts in .env to localhost ```bash
+change all container hosts in .env to localhost
+```bash
 POSTGRES_HOST=localhost
 RABBITMQ_HOST =localhost
 REDIS_HOST = localhost
