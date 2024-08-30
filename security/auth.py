@@ -1,10 +1,10 @@
 import time
 from dotenv import dotenv_values
+from jose import jwt
 
 from fastapi import Request, HTTPException, Depends, status
 from typing import Annotated
 
-from jose import jwt
 from pydantic import BaseModel
 
 from constants.error_message import ErrorMessage

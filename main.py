@@ -43,11 +43,11 @@ async def transactions(request_id: str) -> ORJSONResponse:
     return result
 
 
-# @app.post('/requests/amount', summary='get amounts of a request_id')
-# async def get_requests_list(request_id: str):
-#     handler = CustomerTransaction()
-#     result = handler.amounts(request_id)
-#     return result
+@app.post('/amount', summary='get amounts of a request_id')
+async def get_requests_list(request_id: str):
+    handler = CustomerTransaction()
+    result = handler.amounts(request_id)
+    return result
 #
 #
 # @app.post('/requests/detail', summary='get details of customer request')

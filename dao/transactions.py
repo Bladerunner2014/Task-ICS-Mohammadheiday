@@ -20,18 +20,6 @@ class Transaction:
 
         self.db = session
 
-    def find_request_by_id(self, request_id: Any) -> Optional[RequestAccountsInDB]:
-        try:
-            statement = select(RequestAccountsInDB).filter_by(id=request_id)
-            user = self.db.scalars(statement).first()
-            if user is None:
-                logger.warning(f"No request found with ID: {request_id}")
-            return user
-        except Exception as e:
-            logger.error(f"Error while finding request by ID {request_id}: {e}")
-            # Optionally, you could re-raise the exception if you want it to be handled elsewhere
-            # raise e
-
     def update_request(self, status: Status, request_id: str):
         # Query the specific row by request_id
         request = self.db.query(RequestAccountsInDB).filter_by(request_id=request_id).first()

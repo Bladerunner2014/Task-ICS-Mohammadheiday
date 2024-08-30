@@ -9,8 +9,7 @@ class CacheManager:
         self.logger = logging.getLogger(__name__)
         self.config = dotenv_values(".env")
         # self.key_prefix = key_prefix
-        self.cache = None
-        self.connect()
+        self.cache =self.connect()
 
     def __call__(self, *args, **kwargs):
         return self.cache
@@ -19,26 +18,27 @@ class CacheManager:
         try:
             pool = redis.ConnectionPool(host=self.config["REDIS_HOST"], port=self.config["REDIS_PORT"],
                                         )
-            self.cache = redis.Redis(connection_pool=pool, decode_responses=True,
+            return redis.Redis(connection_pool=pool, decode_responses=True,
                                      password=self.config["REDIS_PASSWORD"])
+
 
         except Exception as error:
             self.logger.error(ErrorMessage.REDIS_CONNECTION)
             self.logger.error(error)
             raise Exception
 
-    def hget(self, key: str):
+    def get(self, key: str):
         try:
-            value = self.cache.hgetall(key)
+            value = self.cache.get(key)
         except Exception as error:
             self.logger.error(ErrorMessage.REDIS_GET)
             self.logger.error(error)
             raise Exception
         return value
 
-    def hset(self, key: str, value: dict):
+    def set(self, key:str, value):
         try:
-            return self.cache.hset(key, mapping=value)
+            return self.cache.set(key, value)
         except Exception as error:
             self.logger.error(ErrorMessage.REDIS_SET)
             self.logger.error(error)

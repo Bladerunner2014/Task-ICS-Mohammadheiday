@@ -2,14 +2,15 @@ from fastapi.responses import ORJSONResponse
 from fastapi import status
 from dotenv import dotenv_values
 import logging
-from schemas.schema import CustomerID, RequestAccounts, Status
+import json
+from schemas.schema import CustomerID, RequestAccounts, Status, TransactionRead
 from log import log
 from http_handler.request_handler import RequestHandler
 from constants.error_message import ErrorMessage
 from constants.info_message import InfoMessage
 from http_handler.fetcher import ResponseFetcher
 from dao.transactions import Transaction
-
+from cache_manager.redis_cache import CacheManager
 config = dotenv_values(".env")
 
 logger = logging.getLogger(__name__)
@@ -18,6 +19,7 @@ logger = logging.getLogger(__name__)
 class CustomerTransaction:
     def __init__(self):
         self.transaction_dao = Transaction()
+        self.cache = CacheManager()
 
     def transactions(self, request_id: str):
         res = self.transaction_dao.transactions(request_id=request_id)
@@ -30,8 +32,33 @@ class CustomerTransaction:
                               status_code=status.HTTP_200_OK)
 
     def amounts(self, request_id: str):
-        res = self.transactions(request_id)
+        c = self.cache.get(request_id)
+        if c:
+            retrieved_data = json.loads(c)
 
+            return ORJSONResponse(content=retrieved_data,
+                                  status_code=status.HTTP_200_OK)
+
+        res = self.transaction_dao.transactions(request_id)
+        logger.info(res)
+        result = self.calculate_total_amount(res)
+        logger.info(result)
+        content = {"data": res, "total_amount": result}
+        json_data = json.dumps(content)
+
+        self.cache.set(key=request_id, value=json_data)
+        return ORJSONResponse(content=content,
+                              status_code=status.HTTP_200_OK)
+
+
+    def calculate_total_amount(self,transactions):
+        total_amount = 0
+        for transaction in transactions:
+            if transaction['type'] == 'deposit':
+                total_amount += transaction['amount']
+            elif transaction['type'] == 'withdraw':
+                total_amount -= transaction['amount']
+        return total_amount
 
 class Accounts:
     def __init__(self):

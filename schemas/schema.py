@@ -59,6 +59,15 @@ class Status(str, Enum):
     FAILED = "failed"
 
 
+class TransactionRead(BaseModel):
+    date: str = Field(...)
+    request_id: str = Field(...)
+    customer_id: int = Field(...)
+    url: str = Field(...)
+    amount: float = Field(...)
+    type: str = Field(...)
+
+
 class RequestAccounts(BaseModel):
     request_id: str | None
     customer_id: CustomerID

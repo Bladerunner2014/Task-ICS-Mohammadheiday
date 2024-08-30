@@ -13,12 +13,15 @@
 آدرس /request/list وضعیت تمام ریکوءست هایی که کاربر فرستاده رو نمایش میده.
 برای راحتی کار من authentication رو برداشتم ولی با اضافه کردن CurrentUser به تابع هر API باید اطلاعات کاربر همراه ریکوءست فرستاده بشه.
 آدرس /amount باقی مانده حساب به همراه تراکنش ها رو نمایش میده. تو این API از Caching with Redis استفاده شده.
-پروژه داکرایز شده ولی یه ایراد داشت اونم این بود که داده ها تو دیتابیس ذخیره نمیشدن. البته اگر حوصله داشتید یه docker compose up بزنید شاید رو سیستم شما جواب داد!
-البته قبلش .env رو تغییر بدید.
+پروژه داکرایز شده ولی یه ایراد داشت اونم این بود که داده ها تو دیتابیس ذخیره نمیشدن. بهتر بود سیستم  
 ## Run bare metal:
 Run the following command in the project root:
 ```bash
 docker run --name test -e POSTGRES_PASSWORD=123456789 -d -p 5432:5432 postgres
+```
+```bash
+
+docker run --name my-redis -d -p 6379:6379 -e REDIS_PASSWORD=kTfmjCzLLSgFnyw2OoGw redis
 ```
 ```bash
 docker run -d --name my-rabbit -p 5672:5672 -p 15672:15672 rabbitmq:management

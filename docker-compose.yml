@@ -48,6 +48,13 @@ services:
 #      - "5555:5555"
 #    depends_on:
 #      - rabbitmq
+  redis:
+      image: redis:latest
+      ports:
+        - "6379:6379"
+      environment:
+        - REDIS_PORT=6379
+        - REDIS_PASSWORD= 'kTfmjCzLLSgFnyw2OoGw'
 
 volumes:
   postgres-data:
