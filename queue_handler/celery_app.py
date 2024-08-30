@@ -3,7 +3,7 @@ from celery import Celery
 # Initialize Celery
 celery_app = Celery(
     'queue_handler',
-    broker='amqp://guest:guest@localhost:5672//',  # RabbitMQ broker URL
+    broker='amqp://guest:guest@rabbitmq:5672//',  # RabbitMQ broker URL
     backend='rpc://',  # or any other result backend
     include=['queue_handler.tasks']  # Import your task modules here
 )

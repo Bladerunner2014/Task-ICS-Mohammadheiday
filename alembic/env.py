@@ -21,8 +21,8 @@ user = conf["POSTGRES_USER"]
 password = conf["POSTGRES_PASSWORD"]
 host = conf["POSTGRES_HOST"]
 port = conf["POSTGRES_PORT"]
-db_name = conf["POSTGRES_PORT"]
-DATABASE_URL = "postgresql://postgres:1234@localhost:5432/postgres"
+db_name = conf["POSTGRES_DB"]
+DATABASE_URL = f"postgresql+psycopg2://{user}:{password}@{host}:{port}/{db_name}"
 print(DATABASE_URL)
 config.set_main_option("sqlalchemy.url", DATABASE_URL)
 
