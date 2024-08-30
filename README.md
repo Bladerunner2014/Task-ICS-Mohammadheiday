@@ -13,7 +13,24 @@
 آدرس /request/list وضعیت تمام ریکوءست هایی که کاربر فرستاده رو نمایش میده.
 برای راحتی کار من authentication رو برداشتم ولی با اضافه کردن CurrentUser به تابع هر API باید اطلاعات کاربر همراه ریکوءست فرستاده بشه.
 آدرس /amount باقی مانده حساب به همراه تراکنش ها رو نمایش میده. تو این API از Caching with Redis استفاده شده.
-پروژه داکرایز شده ولی یه ایراد داشت اونم این بود که داده ها تو دیتابیس ذخیره نمیشدن. بهتر بود سیستم  
+پروژه داکرایز شده ولی یه ایراد داشت اونم این بود که داده ها تو دیتابیس ذخیره نمیشدن. بهتر بود سیستم authentication در یک سرویس جدا باشه ولی چون در اون صورت باید nginx کانفیگ میکردم ترجیح دادم توی همین سرویس بزارمش. من نرسیدم refactor کنم کد رو وگرنه لاگ های بیشتری اضافه میکردم و سیستم monitoring log رو هم اضافه میکردم. در پایان خسته نیاشید میگم و تشکر میکنم ازتون. 
+## Run with docker:
+```bash
+docker compose up -d
+```
+
+```bash
+docker compose up -d
+```
+```bash
+docker exec -it 608 bash
+alembic upgrade head
+celery -A queue_handler.celery_app worker --loglevel=info
+```
+```bash
+endpoints are available at:
+http://0.0.0.0:8009/docs
+```
 ## Run bare metal:
 Run the following command in the project root:
 ```bash
@@ -40,13 +57,6 @@ celery -A queue_handler.celery_app worker --loglevel=info
 celery -A queue_handler.celery_app flower
 
 ```
-
-```bash
-uvicorn --reload main:app --port 8001
-
-```
-
-
 edit .env to MockService config
 ```bash
 #MOCKSERVICE
@@ -54,10 +64,21 @@ MOCK_BASE= "http://0.0.0.0"
 MOCK_ENDPOINT_ACCOUNTS="/customers/"
 MOCK_PORT = 8000
 ```
+change all container hosts in .env to localhost ```bash
+POSTGRES_HOST=localhost
+RABBITMQ_HOST =localhost
+REDIS_HOST = localhost
+
+```
+```bash
+uvicorn --reload main:app --port 8001
+
+```
+
+
 
 ```
 **Note:**
-I could not dockerize whole project!
 # License
 [![Licence](https://img.shields.io/github/license/Ileriayo/markdown-badges?style=for-the-badge)](./LICENSE)
 
