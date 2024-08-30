@@ -1,14 +1,20 @@
 from dotenv import dotenv_values
-from fastapi import FastAPI, BackgroundTasks
+from fastapi import FastAPI, Depends
 import logging
 from log import log
 from schemas.schema import CustomerID, RequestAccounts
-from fastapi.responses import ORJSONResponse
 from handler.handler import Accounts, CustomerTransaction
 from queue_handler.tasks import get_transactions_task
 from constants.info_message import InfoMessage
-from fastapi import status
-
+from fastapi import BackgroundTasks, HTTPException, status
+from fastapi.responses import ORJSONResponse
+from constants.error_message import ErrorMessage
+from security.auth import CurrentUser
+from manager.user_manager import UserManager
+from schemas.schema import UserCreate
+from security.dependency import SessionDep
+from typing import Annotated
+from fastapi.security import OAuth2PasswordRequestForm
 
 app = FastAPI()
 
@@ -16,50 +22,53 @@ config = dotenv_values(".env")
 logger = logging.getLogger(__name__)
 
 
-@app.post('/customers/exist', summary='check existence of customer in database')
-async def get_customer(customer_id: CustomerID) -> ORJSONResponse:
-    handler = Accounts()
-    result = handler.check_customer_existence(customer_id=customer_id)
-    return result
-
-
-@app.post('/customers/transaction/list', summary='retrive all customer transactions')
-async def get_all_transactions(customer_id: CustomerID) -> ORJSONResponse:
+@app.post('/request/list', summary='status of requests')
+async def requests(customer_id: CustomerID) -> ORJSONResponse:
     handler = CustomerTransaction()
-    result = handler.all_transactions(customer_id)
+    result = handler.requests_list(customer_id.customer_id)
     return result
 
 
-@app.post('/customers/transaction/request', summary='retrive all transactions related to a request id')
-async def get_all_transactions(request_id: str) -> ORJSONResponse:
-    handler = CustomerTransaction()
-    result = handler.all_transactions_request(request_id)
-    return result
-
-
-@app.post('/customers/transaction', summary='get transactions')
-async def get_customers_accounts(customer_request: RequestAccounts,
-                                 background_tasks: BackgroundTasks):
+@app.post('/request', summary='send request to gather transactions')
+async def get_customers_accounts(customer_request: RequestAccounts,):
     logger.info(InfoMessage.TRANSACTION_REQUEST)
     get_transactions_task.delay(customer_request.dict())
-    return ORJSONResponse(content={"request_id":customer_request.request_id},status_code=status.HTTP_200_OK)
+    return ORJSONResponse(content={"message": "request submitted"}, status_code=status.HTTP_200_OK)
 
 
-@app.post('/customers/requests', summary='get list of customer requests')
-async def get_all_transactions(customer_id: CustomerID) -> ORJSONResponse:
+@app.post('/transactions', summary='transactions in a request id')
+async def transactions(request_id: str) -> ORJSONResponse:
     handler = CustomerTransaction()
-    result = handler.all_requests(customer_id)
+    result = handler.transactions(request_id)
     return result
 
 
-@app.post('/requests/status', summary='get status of customer request')
-async def get_requests_list(request_id):
-    pass
+# @app.post('/requests/amount', summary='get amounts of a request_id')
+# async def get_requests_list(request_id: str):
+#     handler = CustomerTransaction()
+#     result = handler.amounts(request_id)
+#     return result
+#
+#
+# @app.post('/requests/detail', summary='get details of customer request')
+# async def get_requests_list(request_id):
+#     pass
 
 
-@app.post('/requests/detail', summary='get details of customer request')
-async def get_requests_list(request_id):
-    pass
+@app.post("/register")
+async def register(user_in: UserCreate,
+                   session: SessionDep,
+                   background_task: BackgroundTasks) -> ORJSONResponse:
+    manager = UserManager(session=session)
+
+    return await manager.register(user_in=user_in, bgt=background_task)
+
+
+@app.post("/login")
+async def login(session: SessionDep,
+                form_data: Annotated[OAuth2PasswordRequestForm, Depends()]) -> ORJSONResponse:
+    manager = UserManager(session=session)
+    return await manager.login(phone_number=form_data.username, password=form_data.password)
 
 
 log.setup_logger()

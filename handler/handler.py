@@ -19,20 +19,20 @@ class CustomerTransaction:
     def __init__(self):
         self.transaction_dao = Transaction()
 
-    def all_transactions(self, customer_id: CustomerID):
-        res = self.transaction_dao.get_all_transactions(customer_id=customer_id.customer_id)
+    def transactions(self, request_id: str):
+        res = self.transaction_dao.transactions(request_id=request_id)
         return ORJSONResponse(content={"data": res},
                               status_code=status.HTTP_200_OK)
 
-    def all_transactions_request(self, request_id: str):
-        res = self.transaction_dao.get_all_transactions_request(request_id=request_id)
+    def requests_list(self, customer_id: int):
+        res = self.transaction_dao.requests_list(customer_id=customer_id)
         return ORJSONResponse(content={"data": res},
                               status_code=status.HTTP_200_OK)
 
-    def all_requests(self, customer_id: CustomerID):
-        res = self.transaction_dao.get_all_requests(customer_id=customer_id.customer_id)
-        return ORJSONResponse(content={"data": res},
-                              status_code=status.HTTP_200_OK)
+    def amounts(self, request_id: str):
+        res = self.transactions(request_id)
+
+
 class Accounts:
     def __init__(self):
         self.request_handler = RequestHandler()
@@ -94,16 +94,19 @@ class Accounts:
         check_existence = self.check_customer_existence(customer_id=customer_request.customer_id)
         if check_existence.status_code != status.HTTP_200_OK:
             return check_existence
-        self.store_request( customer_request=customer_request)
+        self.store_request(customer_request=customer_request)
         bank_accounts = self.get_bank_accounts(customer_id=customer_request.customer_id)
+
         reqs = self.create_requests(customer_id=customer_request.customer_id, banks=bank_accounts)
+        logger.info(f"requests: {reqs}")
         transactions, stat = self.send_request_to_bank(reqs, request_id=customer_request.request_id,
                                                        customer_id=int(customer_request.customer_id.customer_id))
         self.store_transactions(transactions=transactions)
-        self.update_request_status( request_id=customer_request.request_id, stat=stat)
+        self.update_request_status(request_id=customer_request.request_id, stat=stat)
         pass
 
     def send_request_to_bank(self, requests: list, request_id: str, customer_id):
+        logger.info(f"fetcher {customer_id}")
         response_fetcher = ResponseFetcher(self.request_handler)
         response_from_banks = response_fetcher.fetch_responses(requests_data=requests, request_id=request_id,
                                                                customer_id=customer_id)
@@ -117,9 +120,9 @@ class Accounts:
 
         pass
 
-    def store_transactions(self,  transactions):
+    def store_transactions(self, transactions):
+        logger.info(f"store to db {transactions}")
         transaction_dao = Transaction()
-        logger.info(InfoMessage.STORE_TO_DB)
         transaction_dao.store_transactions(transactions)
         # logger.info(transactions)
 
@@ -131,8 +134,6 @@ class Accounts:
             transaction_dao.update_request(request_id=request_id, status=Status.DONE)
         else:
             transaction_dao.update_request(request_id=request_id, status=Status.FAILED)
-
-
 
 
 log.setup_logger()

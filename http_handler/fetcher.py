@@ -18,6 +18,7 @@ class ResponseFetcher:
         self.logger = logger
 
     def fetch_responses(self, requests_data: list, request_id:str, customer_id:str):
+        logger.info(f"fetch response {requests_data}")
         responses = []
         with ThreadPoolExecutor(max_workers=int(config["MAX_THREADS"])) as executor:
             future_to_request = {
@@ -42,7 +43,7 @@ class ResponseFetcher:
             'request_id': request_id,
             'url': request_data['base_url'] + ":" + request_data['port'] + request_data['end_point'],
             'status_code': status_code,
-            'response': response["data"]["transactions"]
+            'response': response["data"]["transactions"],
         }
 
     def _handle_error(self, request_data, exc):

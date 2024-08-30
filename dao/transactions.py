@@ -74,10 +74,11 @@ class Transaction:
         Stores a list of transaction data into the database.
         :param data: List of dictionaries containing transaction data.
         """
+        logging.info(f"{data}")
 
         for entry in data:
-
             customer_id = entry['customer_id']
+            logging.info(f"{customer_id}")
             request_id = entry['request_id']
             url = entry['url']
 
@@ -97,7 +98,7 @@ class Transaction:
 
                 self.save(new_transaction)
 
-    def get_all_transactions(self, customer_id: int):
+    def transactions(self, request_id: str):
         """
         Retrieve all rows from the transactions table and return them as a list of dictionaries.
 
@@ -105,7 +106,7 @@ class Transaction:
         :return: List of dictionaries representing each row in the transactions table.
         """
         # Query all transactions
-        transactions = self.db.query(TransactionInDB).filter(TransactionInDB.customer_id == customer_id).all()
+        transactions = self.db.query(TransactionInDB).filter(TransactionInDB.request_id == request_id).all()
         # Convert each row into a dictionary
         transactions_list = []
         for transaction in transactions:
@@ -122,42 +123,16 @@ class Transaction:
 
         return transactions_list
 
-    def get_all_transactions_request(self, request_id: str):
-        """
-        Retrieve all rows from the transactions table and return them as a list of dictionaries.
 
-        :param session: SQLAlchemy session to interact with the database.
-        :return: List of dictionaries representing each row in the transactions table.
-        """
-        # Query all transactions
-        transactions = self.db.query(TransactionInDB).filter(TransactionInDB.request_id == request_id).all()
-        # Convert each row into a dictionary
-        transactions_list = []
-        for transaction in transactions:
-            transaction_dict = {
-                'id': transaction.id,
-                'date': transaction,
-                'request_id': transaction.request_id,
-                'customer_id': transaction.customer_id,
-                'url': transaction.url,
-                'amount': transaction.amount,
-                'type': transaction.type,
-            }
-            transactions_list.append(transaction_dict)
-
-        return transactions_list
-
-    def get_all_requests(self, customer_id: int):
+    def requests_list(self, customer_id: int):
         """
             Retrieve all rows from the customer_transaction_requests table and return them as a list of dictionaries.
 
             :param session: SQLAlchemy session to interact with the database.
             :return: List of dictionaries representing each row in the customer_transaction_requests table.
             """
-        # Query all records from the customer_transaction_requests table
-        request_accounts = self.db.query(RequestAccountsInDB).filter(TransactionInDB.customer_id == customer_id).all()
-
-        # Convert each record into a dictionary
+        customer_id = str(customer_id)
+        request_accounts = self.db.query(RequestAccountsInDB).filter(RequestAccountsInDB.customer_id == customer_id).all()
         request_accounts_list = []
         for request_account in request_accounts:
             request_account_dict = {
@@ -167,5 +142,4 @@ class Transaction:
                 'status': request_account.status
             }
             request_accounts_list.append(request_account_dict)
-
         return request_accounts_list

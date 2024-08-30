@@ -1,9 +1,12 @@
 from celery import Celery
+from dotenv import dotenv_values
 
+config = dotenv_values(".env")
+host = config["RABBITMQ_HOST"]
 # Initialize Celery
 celery_app = Celery(
     'queue_handler',
-    broker='amqp://guest:guest@192.168.1.6:5672//',  # RabbitMQ broker URL
+    broker=f'amqp://guest:guest@{host}:5672//',  # RabbitMQ broker URL
     backend='rpc://',  # or any other result backend
     include=['queue_handler.tasks']  # Import your task modules here
 )
