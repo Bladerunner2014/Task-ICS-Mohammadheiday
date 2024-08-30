@@ -15,15 +15,12 @@
 آدرس /amount باقی مانده حساب به همراه تراکنش ها رو نمایش میده. تو این API از Caching with Redis استفاده شده.
 بهتر بود سیستم authentication در یک سرویس جدا باشه ولی چون در اون صورت باید nginx کانفیگ میکردم ترجیح دادم توی همین سرویس بزارمش. من نرسیدم refactor کنم کد رو وگرنه لاگ های بیشتری اضافه میکردم و سیستم monitoring log رو هم اضافه میکردم. در پایان خسته نیاشید میگم و تشکر میکنم ازتون. 
 ## Run with docker:
-```bash
-docker compose up -d
-```
 
 ```bash
 docker compose up -d
 ```
 ```bash
-docker exec -it 608 bash
+docker exec -it {container_id of task container} bash
 alembic upgrade head
 celery -A queue_handler.celery_app worker --loglevel=info
 ```
