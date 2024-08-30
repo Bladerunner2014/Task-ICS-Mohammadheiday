@@ -1,10 +1,12 @@
 from dotenv import dotenv_values
-from fastapi import FastAPI
+from fastapi import FastAPI, BackgroundTasks
 import logging
 from log import log
-from schemas.schema import CustomerID
+from schemas.schema import CustomerID, RequestAccounts
 from fastapi.responses import ORJSONResponse
-from handler.handler import Accounts
+from handler.handler import Accounts, CustomerTransaction
+from db.session import SessionDep
+from constants.info_message import InfoMessage
 
 app = FastAPI()
 
@@ -19,20 +21,31 @@ async def get_customer(customer_id: CustomerID) -> ORJSONResponse:
     return result
 
 
-@app.post('/customers/accounts', summary='gathering customer accounts and transactions')
-async def get_customers_accounts(customer_id: CustomerID):
+@app.post('/customers/transaction/list', summary='retrive all customer transactions')
+async def get_all_transactions(session: SessionDep,customer_id: CustomerID) -> ORJSONResponse:
+    handler = CustomerTransaction(session)
+    result = handler.all_transactions(customer_id)
+    return result
+@app.post('/customers/transaction/request', summary='retrive all transactions related to a request id')
+async def get_all_transactions(session: SessionDep,request_id:str) -> ORJSONResponse:
+    handler = CustomerTransaction(session)
+    result = handler.all_transactions_request(request_id)
+    return result
+
+@app.post('/customers/transaction', summary='get transactions')
+async def get_customers_accounts(session: SessionDep, customer_request: RequestAccounts,
+                                 background_tasks: BackgroundTasks):
+    logger.info(InfoMessage.TRANSACTION_REQUEST)
     handler = Accounts()
-    result = handler.get_customer_accounts(customer_id=customer_id)
-    res = handler.create_requests(customer_id=customer_id, banks=result)
-
-    r = handler.send_request_to_bank(res)
-
-    return r, 200
+    background_tasks.add_task(handler.get_transactions, session=session, customer_request=customer_request)
+    return "result", 200
 
 
 @app.post('/customers/requests', summary='get list of customer requests')
-async def get_requests_list(customer_id: CustomerID):
-    pass
+async def get_all_transactions(session: SessionDep, customer_id: CustomerID) -> ORJSONResponse:
+    handler = CustomerTransaction(session)
+    result = handler.all_requests(customer_id)
+    return result
 
 
 @app.post('/requests/status', summary='get status of customer request')

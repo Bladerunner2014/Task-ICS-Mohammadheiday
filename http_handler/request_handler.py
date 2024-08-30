@@ -1,11 +1,15 @@
 import logging
 import requests
+from constants.info_message import InfoMessage
+from constants.error_message import ErrorMessage
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 from fastapi import status
 from dotenv import dotenv_values
+from log import log
 
 config = dotenv_values(".env")
+logger = logging.getLogger(__name__)
 
 
 class RequestHandler:
@@ -39,6 +43,7 @@ class RequestHandler:
                 headers=default_headers,
                 timeout=int(timeout)
             )
+            logger.info(InfoMessage.HTTP_HANDLER + "{}".format(end_point))
             return response.json(), response.status_code
 
         except Exception as error:
@@ -62,6 +67,7 @@ class RequestHandler:
                 headers=default_headers,
                 timeout=int(timeout)
             )
+            logger.info(InfoMessage.HTTP_HANDLER + "{}".format(end_point))
 
             return response.json(), response.status_code
 
@@ -86,6 +92,8 @@ class RequestHandler:
                 headers=default_headers,
                 timeout=int(timeout)
             )
+            logger.info(InfoMessage.HTTP_HANDLER + "{}".format(end_point))
+
             return response.json(), response.status_code
 
         except Exception as error:
@@ -94,3 +102,4 @@ class RequestHandler:
             return {"error": "An unknown error occurred"}, status.HTTP_500_INTERNAL_SERVER_ERROR
 
 
+log.setup_logger()

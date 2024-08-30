@@ -1,0 +1,25 @@
+version: '3'
+
+services:
+  task:
+    build: .
+    command: sh -c "uvicorn main:app --host 0.0.0.0 --port 8009"
+
+    ports:
+      - "8009:8009"
+
+  redis:
+      image: redis:latest
+      ports:
+        - "6379:6379"
+      environment:
+        - REDIS_PORT=6379
+        - REDIS_PASSWORD= 'kTfmjCzLLSgFnyw2OoGw'
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"   # Broker port
+      - "15672:15672" # Management UI port
+
