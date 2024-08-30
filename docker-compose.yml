@@ -8,6 +8,7 @@ services:
       - "8009:8009"
     depends_on:
       - rabbitmq
+      - celery_worker
 
   #  redis:
 #      image: redis:latest
