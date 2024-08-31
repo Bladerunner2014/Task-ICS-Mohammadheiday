@@ -128,7 +128,8 @@ class Accounts:
         logger.info(f"requests: {reqs}")
         transactions, stat = self.send_request_to_bank(reqs, request_id=customer_request.request_id,
                                                        customer_id=int(customer_request.customer_id.customer_id))
-        self.store_transactions(transactions=transactions)
+        if stat:
+            self.store_transactions(transactions=transactions)
         self.update_request_status(request_id=customer_request.request_id, stat=stat)
         pass
 
